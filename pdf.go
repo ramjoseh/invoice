@@ -14,6 +14,10 @@ const (
 	quantityColumnOffset = 360
 	rateColumnOffset     = 405
 	amountColumnOffset   = 480
+
+	itemRowHeight = 24
+	// The summary starts at this position, so item rows must end above it.
+	summaryY = 600
 )
 
 const (
@@ -149,21 +153,46 @@ func writeFooter(pdf *gopdf.GoPdf, id string) {
 	pdf.Br(48)
 }
 
-func writeRow(pdf *gopdf.GoPdf, item string, quantity int, rate float64) {
+func writeItemRows(pdf *gopdf.GoPdf, invoice Invoice) float64 {
+	subtotal := 0.0
+	for i, item := range invoice.Items {
+		quantity := 1.0
+		if len(invoice.Quantities) > i {
+			quantity = invoice.Quantities[i]
+		}
+
+		rate := 0.0
+		if len(invoice.Rates) > i {
+			rate = invoice.Rates[i]
+		}
+
+		if pdf.GetY()+itemRowHeight > summaryY {
+			writeFooter(pdf, invoice.Id)
+			pdf.AddPage()
+			writeHeaderRow(pdf)
+		}
+
+		writeRow(pdf, item, quantity, rate)
+		subtotal += quantity * rate
+	}
+	return subtotal
+}
+
+func writeRow(pdf *gopdf.GoPdf, item string, quantity float64, rate float64) {
 	_ = pdf.SetFont("Inter", "", 11)
 	pdf.SetTextColor(0, 0, 0)
 
-	total := float64(quantity) * rate
+	total := quantity * rate
 	amount := strconv.FormatFloat(total, 'f', 2, 64)
 
 	_ = pdf.Cell(nil, item)
 	pdf.SetX(quantityColumnOffset)
-	_ = pdf.Cell(nil, strconv.Itoa(quantity))
+	_ = pdf.Cell(nil, strconv.FormatFloat(quantity, 'f', -1, 64))
 	pdf.SetX(rateColumnOffset)
 	_ = pdf.Cell(nil, currencySymbols[file.Currency]+strconv.FormatFloat(rate, 'f', 2, 64))
 	pdf.SetX(amountColumnOffset)
 	_ = pdf.Cell(nil, currencySymbols[file.Currency]+amount)
-	pdf.Br(24)
+	pdf.Br(itemRowHeight)
 }
 
 func writeTotals(pdf *gopdf.GoPdf, subtotal float64, tax float64, discount float64) {

@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "embed"
-	"flag"
 	"fmt"
 	"log"
 	"strings"
@@ -30,7 +29,7 @@ type Invoice struct {
 	Due  string `json:"due" yaml:"due"`
 
 	Items      []string  `json:"items" yaml:"items"`
-	Quantities []int     `json:"quantities" yaml:"quantities"`
+	Quantities []float64 `json:"quantities" yaml:"quantities"`
 	Rates      []float64 `json:"rates" yaml:"rates"`
 
 	Tax      float64 `json:"tax" yaml:"tax"`
@@ -45,7 +44,7 @@ func DefaultInvoice() Invoice {
 		Id:         time.Now().Format("20060102"),
 		Title:      "INVOICE",
 		Rates:      []float64{25},
-		Quantities: []int{2},
+		Quantities: []float64{2},
 		Items:      []string{"Paper Cranes"},
 		From:       "Project Folded, Inc.",
 		To:         "Untitled Corporation, Inc.",
@@ -72,7 +71,7 @@ func init() {
 	generateCmd.Flags().StringVar(&file.Title, "title", "INVOICE", "Title")
 
 	generateCmd.Flags().Float64SliceVarP(&file.Rates, "rate", "r", defaultInvoice.Rates, "Rates")
-	generateCmd.Flags().IntSliceVarP(&file.Quantities, "quantity", "q", defaultInvoice.Quantities, "Quantities")
+	generateCmd.Flags().Float64SliceVarP(&file.Quantities, "quantity", "q", defaultInvoice.Quantities, "Quantities")
 	generateCmd.Flags().StringSliceVarP(&file.Items, "item", "i", defaultInvoice.Items, "Items")
 
 	generateCmd.Flags().StringVarP(&file.Logo, "logo", "l", defaultInvoice.Logo, "Company logo")
@@ -88,7 +87,6 @@ func init() {
 	generateCmd.Flags().StringVarP(&file.Note, "note", "n", "", "Note")
 	generateCmd.Flags().StringVarP(&output, "output", "o", "invoice.pdf", "Output file (.pdf)")
 
-	flag.Parse()
 }
 
 var rootCmd = &cobra.Command{
@@ -130,21 +128,7 @@ var generateCmd = &cobra.Command{
 		writeTitle(&pdf, file.Title, file.Id, file.Date)
 		writeBillTo(&pdf, file.To)
 		writeHeaderRow(&pdf)
-		subtotal := 0.0
-		for i := range file.Items {
-			q := 1
-			if len(file.Quantities) > i {
-				q = file.Quantities[i]
-			}
-
-			r := 0.0
-			if len(file.Rates) > i {
-				r = file.Rates[i]
-			}
-
-			writeRow(&pdf, file.Items[i], q, r)
-			subtotal += float64(q) * r
-		}
+		subtotal := writeItemRows(&pdf, file)
 		if file.Note != "" {
 			writeNotes(&pdf, file.Note)
 		}

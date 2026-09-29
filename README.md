@@ -8,7 +8,7 @@ Generate invoices from the command line.
 
 ```bash
 invoice generate --from "Dream, Inc." --to "Imagine, Inc." \
-    --item "Rubber Duck" --quantity 2 --rate 25 \
+    --item "Rubber Duck" --quantity 2.5 --rate 25 \
     --tax 0.13 --discount 0.15 \
     --note "For debugging purposes."
 ```
@@ -57,7 +57,7 @@ Or, save repeated information with JSON / YAML:
     "to": "Imagine, Inc.",
     "tax": 0.13,
     "items": ["Yellow Rubber Duck", "Special Edition Plaid Rubber Duck"],
-    "quantities": [5, 1],
+    "quantities": [5, 1.5],
     "rates": [25, 25],
 }
 ```
