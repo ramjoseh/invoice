@@ -31,6 +31,7 @@ type Invoice struct {
 	Items      []string  `json:"items" yaml:"items"`
 	Quantities []float64 `json:"quantities" yaml:"quantities"`
 	Rates      []float64 `json:"rates" yaml:"rates"`
+	Hourly     bool      `json:"hourly" yaml:"hourly"`
 
 	Tax      float64 `json:"tax" yaml:"tax"`
 	Discount float64 `json:"discount" yaml:"discount"`
@@ -73,6 +74,7 @@ func init() {
 	generateCmd.Flags().Float64SliceVarP(&file.Rates, "rate", "r", defaultInvoice.Rates, "Rates")
 	generateCmd.Flags().Float64SliceVarP(&file.Quantities, "quantity", "q", defaultInvoice.Quantities, "Quantities")
 	generateCmd.Flags().StringSliceVarP(&file.Items, "item", "i", defaultInvoice.Items, "Items")
+	generateCmd.Flags().BoolVar(&file.Hourly, "hourly", false, "Label quantities as hours")
 
 	generateCmd.Flags().StringVarP(&file.Logo, "logo", "l", defaultInvoice.Logo, "Company logo")
 	generateCmd.Flags().StringVarP(&file.From, "from", "f", defaultInvoice.From, "Issuing company")
@@ -127,7 +129,7 @@ var generateCmd = &cobra.Command{
 		writeLogo(&pdf, file.Logo, file.From)
 		writeTitle(&pdf, file.Title, file.Id, file.Date)
 		writeBillTo(&pdf, file.To)
-		writeHeaderRow(&pdf)
+		writeHeaderRow(&pdf, file.Hourly)
 		subtotal := writeItemRows(&pdf, file)
 		if file.Note != "" {
 			writeNotes(&pdf, file.Note)

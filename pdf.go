@@ -109,17 +109,24 @@ func writeBillTo(pdf *gopdf.GoPdf, to string) {
 	pdf.Br(64)
 }
 
-func writeHeaderRow(pdf *gopdf.GoPdf) {
+func writeHeaderRow(pdf *gopdf.GoPdf, hourly bool) {
 	_ = pdf.SetFont("Inter", "", 9)
 	pdf.SetTextColor(55, 55, 55)
 	_ = pdf.Cell(nil, "ITEM")
 	pdf.SetX(quantityColumnOffset)
-	_ = pdf.Cell(nil, "QTY")
+	_ = pdf.Cell(nil, quantityHeader(hourly))
 	pdf.SetX(rateColumnOffset)
 	_ = pdf.Cell(nil, "RATE")
 	pdf.SetX(amountColumnOffset)
 	_ = pdf.Cell(nil, "AMOUNT")
 	pdf.Br(24)
+}
+
+func quantityHeader(hourly bool) string {
+	if hourly {
+		return "HOURS"
+	}
+	return "QTY"
 }
 
 func writeNotes(pdf *gopdf.GoPdf, notes string) {
@@ -169,7 +176,7 @@ func writeItemRows(pdf *gopdf.GoPdf, invoice Invoice) float64 {
 		if pdf.GetY()+itemRowHeight > summaryY {
 			writeFooter(pdf, invoice.Id)
 			pdf.AddPage()
-			writeHeaderRow(pdf)
+			writeHeaderRow(pdf, invoice.Hourly)
 		}
 
 		writeRow(pdf, item, quantity, rate)

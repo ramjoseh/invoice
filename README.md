@@ -9,9 +9,12 @@ Generate invoices from the command line.
 ```bash
 invoice generate --from "Dream, Inc." --to "Imagine, Inc." \
     --item "Rubber Duck" --quantity 2.5 --rate 25 \
-    --tax 0.13 --discount 0.15 \
+    --hourly --tax 0.13 --discount 0.15 \
     --note "For debugging purposes."
 ```
+
+Use `--hourly` (or `"hourly": true` in a configuration file) to label the
+quantity column as `HOURS`.
 
 <img src="https://vhs.charm.sh/vhs-66CMd4UQuXkuxX9djHUnGX.gif" width="600" />
 
@@ -59,6 +62,7 @@ Or, save repeated information with JSON / YAML:
     "items": ["Yellow Rubber Duck", "Special Edition Plaid Rubber Duck"],
     "quantities": [5, 1.5],
     "rates": [25, 25],
+    "hourly": true
 }
 ```
 

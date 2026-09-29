@@ -28,7 +28,7 @@ func TestWriteItemRowsAddsContinuationPage(t *testing.T) {
 	writeLogo(pdf, invoice.Logo, invoice.From)
 	writeTitle(pdf, invoice.Title, invoice.Id, invoice.Date)
 	writeBillTo(pdf, invoice.To)
-	writeHeaderRow(pdf)
+	writeHeaderRow(pdf, invoice.Hourly)
 	subtotal := writeItemRows(pdf, invoice)
 
 	if got, want := pdf.GetNumberOfPages(), 2; got != want {
@@ -39,6 +39,25 @@ func TestWriteItemRowsAddsContinuationPage(t *testing.T) {
 	}
 	if pdf.GetY() > summaryY {
 		t.Errorf("item rows ended at y=%v, below summary boundary %v", pdf.GetY(), summaryY)
+	}
+}
+
+func TestQuantityHeader(t *testing.T) {
+	tests := []struct {
+		name   string
+		hourly bool
+		want   string
+	}{
+		{name: "quantity mode", want: "QTY"},
+		{name: "hourly mode", hourly: true, want: "HOURS"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := quantityHeader(tt.hourly); got != tt.want {
+				t.Errorf("quantityHeader(%v) = %q, want %q", tt.hourly, got, tt.want)
+			}
+		})
 	}
 }
 
